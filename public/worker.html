@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Stock Submission</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: auto; background-color: #f4f4f9; }
+        h2 { text-align: center; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin-top: 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        #status { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Worker Stock Entry</h2>
+        <form id="stockForm">
+            <label>Worker Name:</label>
+            <input type="text" id="worker" placeholder="Enter your name" required>
+
+            <label>Item Name:</label>
+            <input type="text" id="item" placeholder="Enter product/item name" required>
+
+            <label>Quantity:</label>
+            <input type="number" id="qty" placeholder="Enter quantity" required>
+
+            <button type="submit">Send to PC</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Handle form submission to send data to PC Backend
+        document.getElementById('stockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const worker = document.getElementById('worker').value;
+            const item = document.getElementById('item').value;
+            const qty = document.getElementById('qty').value;
+            const statusDiv = document.getElementById('status');
+
+            statusDiv.style.color = 'blue';
+            statusDiv.innerText = 'Sending to PC...';
+
+            try {
+                const response = await fetch('/api/add-stock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ worker, item, qty })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    statusDiv.style.color = 'green';
+                    statusDiv.innerText = '✅ ' + result.message;
+                    document.getElementById('item').value = '';
+                    document.getElementById('qty').value = '';
+                } else {
+                    statusDiv.style.color = 'red';
+                    statusDiv.innerText = '❌ ' + result.message;
+                }
+            } catch (error) {
+                statusDiv.style.color = 'red';
+                statusDiv.innerText = '❌ Server connection failed!';
+            }
+        });
+    </script>
+</body>
+</html>
